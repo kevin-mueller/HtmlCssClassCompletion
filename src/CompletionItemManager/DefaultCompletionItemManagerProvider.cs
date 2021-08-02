@@ -19,9 +19,7 @@ namespace HtmlCssClassCompletion.CompletionItemManager
 
         IAsyncCompletionItemManager IAsyncCompletionItemManagerProvider.GetOrCreate(ITextView textView)
         {
-            if (_instance == null)
-                _instance = new DefaultCompletionItemManager(PatternMatcherFactory);
-            return _instance;
+            return _instance ??= new DefaultCompletionItemManager(PatternMatcherFactory);
         }
     }
 }
