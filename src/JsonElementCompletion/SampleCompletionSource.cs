@@ -22,22 +22,6 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         // ImageElements may be shared by CompletionFilters and CompletionItems. The automationName parameter should be localized.
         static ImageElement MetalIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 2708), "Metal");
-        static ImageElement NonMetalIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 2709), "Non metal");
-        static ImageElement MetalloidIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 2716), "Metalloid");
-        static ImageElement UnknownIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 3533), "Unknown");
-
-        // CompletionFilters are rendered in the UI as buttons
-        // The displayText should be localized. Alt + Access Key toggles the filter button.
-        static CompletionFilter MetalFilter = new CompletionFilter("Metal", "M", MetalIcon);
-        static CompletionFilter NonMetalFilter = new CompletionFilter("Non metal", "N", NonMetalIcon);
-        static CompletionFilter UnknownFilter = new CompletionFilter("Unknown", "U", UnknownIcon);
-
-        // CompletionItem takes array of CompletionFilters.
-        // In this example, items assigned "MetalloidFilters" are visible in the list if user selects either MetalFilter or NonMetalFilter.
-        static ImmutableArray<CompletionFilter> MetalFilters = ImmutableArray.Create(MetalFilter);
-        static ImmutableArray<CompletionFilter> NonMetalFilters = ImmutableArray.Create(NonMetalFilter);
-        static ImmutableArray<CompletionFilter> MetalloidFilters = ImmutableArray.Create(MetalFilter, NonMetalFilter);
-        static ImmutableArray<CompletionFilter> UnknownFilters = ImmutableArray.Create(UnknownFilter);
 
         public SampleCompletionSource(ElementCatalog catalog, ITextStructureNavigatorSelectorService structureNavigatorSelector)
         {
@@ -183,38 +167,10 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         /// </summary>
         private CompletionItem MakeItemFromElement(ElementCatalog.Element element)
         {
-            ImageElement icon = null;
-            ImmutableArray<CompletionFilter> filters;
-
-            switch (element.Category)
-            {
-                case ElementCatalog.Element.Categories.Metal:
-                    icon = MetalIcon;
-                    filters = MetalFilters;
-                    break;
-                case ElementCatalog.Element.Categories.Metalloid:
-                    icon = MetalloidIcon;
-                    filters = MetalloidFilters;
-                    break;
-                case ElementCatalog.Element.Categories.NonMetal:
-                    icon = NonMetalIcon;
-                    filters = NonMetalFilters;
-                    break;
-                case ElementCatalog.Element.Categories.Uncategorized:
-                    icon = UnknownIcon;
-                    filters = UnknownFilters;
-                    break;
-            }
             var item = new CompletionItem(
                 displayText: element.Name,
                 source: this,
-                icon: icon,
-                filters: filters,
-                suffix: element.Symbol,
-                insertText: element.Name,
-                sortText: $"Element {element.AtomicNumber,3}",
-                filterText: $"{element.Name} {element.Symbol}",
-                attributeIcons: ImmutableArray<ImageElement>.Empty);
+                icon: MetalIcon);
 
             // Each completion item we build has a reference to the element in the property bag.
             // We use this information when we construct the tooltip.
