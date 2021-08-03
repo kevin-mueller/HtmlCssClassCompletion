@@ -23,11 +23,6 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         public bool ShouldCommitCompletion(IAsyncCompletionSession session, SnapshotPoint location, char typedChar, CancellationToken token)
         {
-            // This method runs synchronously, potentially before CompletionItem has been computed.
-            // The purpose of this method is to filter out characters not applicable at given location.
-
-            // This method is called only when typedChar is among the PotentialCommitCharacters
-            // in this simple example, all PotentialCommitCharacters do commit, so we always return true
             return true;
         }
 

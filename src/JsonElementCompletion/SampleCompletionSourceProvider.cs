@@ -19,6 +19,9 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         IDictionary<ITextView, IAsyncCompletionSource> cache = new Dictionary<ITextView, IAsyncCompletionSource>();
 
         [Import]
+        ElementCatalog Cataolog;
+
+        [Import]
         ITextStructureNavigatorSelectorService StructureNavigatorSelector;
 
         public IAsyncCompletionSource GetOrCreate(ITextView textView)
@@ -26,7 +29,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             if (cache.TryGetValue(textView, out var itemSource))
                 return itemSource;
 
-            var source = new SampleCompletionSource(new ElementCatalog(), StructureNavigatorSelector); // opportunity to pass in MEF parts
+            var source = new SampleCompletionSource(Cataolog, StructureNavigatorSelector); // opportunity to pass in MEF parts
             textView.Closed += (o, e) => cache.Remove(textView); // clean up memory as files are closed
             cache.Add(textView, source);
             return source;

@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 namespace HtmlCssClassCompletion.JsonElementCompletion
 {
     [Export(typeof(IAsyncCompletionCommitManagerProvider))]
-    [Name("Chemical element commit manager provider")]
-    [ContentType("text")]
+    [Name("Html css classes commit manager provider")]
+    [ContentType("HTMLXProjection")]
     class SampleCompletionCommitManagerProvider : IAsyncCompletionCommitManagerProvider
     {
         IDictionary<ITextView, IAsyncCompletionCommitManager> cache = new Dictionary<ITextView, IAsyncCompletionCommitManager>();

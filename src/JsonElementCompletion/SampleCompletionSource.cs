@@ -106,16 +106,16 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             {
                 var items = Regex.Split(textBeforeCaret, "class=", RegexOptions.IgnoreCase);
                 if (items[1].Count(x => (x == '"')) == 1)
-                    return new CompletionContext(Catalog.Elements.Select(n => MakeItemFromElement(n)).ToImmutableArray());
+                    return await Task.FromResult(new CompletionContext(Catalog.Classes.Select(n => MakeItemFromElement(n)).ToImmutableArray()));
             }
 
             return null;
         }
 
         /// <summary>
-        /// Builds a <see cref="CompletionItem"/> based on <see cref="ElementCatalog.Element"/>
+        /// Builds a <see cref="CompletionItem"/> based on <see cref="ElementCatalog.CssClass"/>
         /// </summary>
-        private CompletionItem MakeItemFromElement(ElementCatalog.Element element)
+        private CompletionItem MakeItemFromElement(ElementCatalog.CssClass element)
         {
             var item = new CompletionItem(
                 displayText: element.Name,
@@ -124,7 +124,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
             // Each completion item we build has a reference to the element in the property bag.
             // We use this information when we construct the tooltip.
-            item.Properties.AddProperty(nameof(ElementCatalog.Element), element);
+            item.Properties.AddProperty(nameof(ElementCatalog.CssClass), element);
 
             return item;
         }
@@ -134,9 +134,9 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         /// </summary>
         public async Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
         {
-            if (item.Properties.TryGetProperty<ElementCatalog.Element>(nameof(ElementCatalog.Element), out var matchingElement))
+            if (item.Properties.TryGetProperty<ElementCatalog.CssClass>(nameof(ElementCatalog.CssClass), out var matchingElement))
             {
-                return $"{matchingElement.Name} [From File: {matchingElement.FileName}]";
+                return await Task.FromResult($"{matchingElement.Name} [From File: {matchingElement.FileName}]");
             }
             return null;
         }
