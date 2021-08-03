@@ -75,25 +75,32 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.CoreUtility">
-      <Version>16.0.127</Version>
+      <Version>16.11.31</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Language">
-      <Version>16.0.127</Version>
+      <Version>16.11.31</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.ProjectAggregator">
+      <Version>16.11.31527.49</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers">
-      <Version>15.7.11</Version>
+      <Version>16.10.10</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Text.Data">
-      <Version>16.0.127</Version>
+      <Version>16.11.31</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Text.Logic">
-      <Version>16.0.127</Version>
+      <Version>16.11.31</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
-      <Version>15.7.21</Version>
+      <Version>16.10.59</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable">
-      <Version>1.3.1</Version>
+      <Version>5.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
