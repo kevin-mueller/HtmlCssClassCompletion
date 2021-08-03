@@ -41,19 +41,6 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
-            // We participate in completion and provide the "applicable to span".
-            // This span is used:
-            // 1. To search (filter) the list of all completion items
-            // 2. To highlight (bold) the matching part of the completion items
-            // 3. In standard cases, it is replaced by content of completion item upon commit.
-
-            // If you want to extend a language which already has completion, don't provide a span, e.g.
-            // return CompletionStartData.ParticipatesInCompletionIfAny
-
-            // If you provide a language, but don't have any items available at this location,
-            // consider providing a span for extenders who can't parse the codem e.g.
-            // return CompletionStartData(CompletionParticipation.DoesNotProvideItems, spanForOtherExtensions);
-
             var tokenSpan = FindTokenSpanAtPosition(triggerLocation);
             return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
         }
@@ -109,57 +96,20 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         public async Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
         {
-            // See whether we are in the key or value portion of the pair
+            // See whether we are in a class= context.
+
             var lineStart = triggerLocation.GetContainingLine().Start;
             var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
             var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
-            var colonIndex = textBeforeCaret.IndexOf(':');
-            var colonExistsBeforeCaret = colonIndex != -1;
 
-            // User is likely in the key portion of the pair
-            if (!colonExistsBeforeCaret)
-                return GetContextForKey();
-
-            // User is likely in the value portion of the pair. Try to provide extra items based on the key.
-            var KeyExtractingRegex = new Regex(@"\W*(\w+)\W*:");
-            var key = KeyExtractingRegex.Match(textBeforeCaret);
-            var candidateName = key.Success ? key.Groups.Count > 0 && key.Groups[1].Success ? key.Groups[1].Value : string.Empty : string.Empty;
-            return GetContextForValue(candidateName);
-        }
-
-        /// <summary>
-        /// Returns completion items applicable to the value portion of the key-value pair
-        /// </summary>
-        private CompletionContext GetContextForValue(string key)
-        {
-            // Provide a few items based on the key
-            ImmutableArray<CompletionItem> itemsBasedOnKey = ImmutableArray<CompletionItem>.Empty;
-            if (!string.IsNullOrEmpty(key))
+            if (textBeforeCaret.IndexOf("class=", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                var matchingElement = Catalog.Elements.FirstOrDefault(n => n.Name == key);
-                if (matchingElement != null)
-                {
-                    var itemsBuilder = ImmutableArray.CreateBuilder<CompletionItem>();
-                    itemsBuilder.Add(new CompletionItem(matchingElement.Name, this));
-                    itemsBuilder.Add(new CompletionItem(matchingElement.Symbol, this));
-                    itemsBuilder.Add(new CompletionItem(matchingElement.AtomicNumber.ToString(), this));
-                    itemsBuilder.Add(new CompletionItem(matchingElement.AtomicWeight.ToString(), this));
-                    itemsBasedOnKey = itemsBuilder.ToImmutable();
-                }
+                var items = Regex.Split(textBeforeCaret, "class=", RegexOptions.IgnoreCase);
+                if (items[1].Count(x => (x == '"')) == 1)
+                    return new CompletionContext(Catalog.Elements.Select(n => MakeItemFromElement(n)).ToImmutableArray());
             }
-            // We would like to allow user to type anything, so we create SuggestionItemOptions
-            var suggestionOptions = new SuggestionItemOptions("Value of your choice", $"Please enter value for key {key}");
 
-            return new CompletionContext(itemsBasedOnKey, suggestionOptions);
-        }
-
-        /// <summary>
-        /// Returns completion items applicable to the key portion of the key-value pair
-        /// </summary>
-        private CompletionContext GetContextForKey()
-        {
-            var context = new CompletionContext(Catalog.Elements.Select(n => MakeItemFromElement(n)).ToImmutableArray());
-            return context;
+            return null;
         }
 
         /// <summary>
@@ -186,20 +136,9 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
             if (item.Properties.TryGetProperty<ElementCatalog.Element>(nameof(ElementCatalog.Element), out var matchingElement))
             {
-                return $"{matchingElement.Name} [{matchingElement.AtomicNumber}, {matchingElement.Symbol}] is {GetCategoryName(matchingElement.Category)} with atomic weight {matchingElement.AtomicWeight}";
+                return $"{matchingElement.Name} [From File: {matchingElement.FileName}]";
             }
             return null;
-        }
-
-        private string GetCategoryName(ElementCatalog.Element.Categories category)
-        {
-            switch(category)
-            {
-                case ElementCatalog.Element.Categories.Metal: return "a metal";
-                case ElementCatalog.Element.Categories.Metalloid: return "a metalloid";
-                case ElementCatalog.Element.Categories.NonMetal: return "a non metal";
-                default:  return "an uncategorized element";
-            }
         }
     }
 }

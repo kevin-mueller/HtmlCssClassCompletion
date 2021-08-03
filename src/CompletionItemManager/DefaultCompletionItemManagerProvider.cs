@@ -3,12 +3,14 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.PatternMatching;
 using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Windows;
 
 namespace HtmlCssClassCompletion.CompletionItemManager
 {
     [Export(typeof(IAsyncCompletionItemManagerProvider))]
-    [Name("Default completion item manager")]
-    [ContentType("text")]
+    [Name("Better Html Css Class Intellisense")]
+    [ContentType("HTMLXProjection")]
     [Order(Before = PredefinedCompletionNames.DefaultCompletionItemManager)] // override the default item manager so that we can step through this code
     internal sealed class DefaultCompletionItemManagerProvider : IAsyncCompletionItemManagerProvider
     {

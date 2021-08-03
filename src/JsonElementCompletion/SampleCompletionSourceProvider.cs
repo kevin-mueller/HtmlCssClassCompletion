@@ -12,14 +12,11 @@ using System.Threading.Tasks;
 namespace HtmlCssClassCompletion.JsonElementCompletion
 {
     [Export(typeof(IAsyncCompletionSourceProvider))]
-    [Name("Chemical element dictionary completion provider")]
-    [ContentType("text")]
+    [Name("Css Classes Source Provider")]
+    [ContentType("HTMLXProjection")]
     class SampleCompletionSourceProvider : IAsyncCompletionSourceProvider
     {
         IDictionary<ITextView, IAsyncCompletionSource> cache = new Dictionary<ITextView, IAsyncCompletionSource>();
-
-        [Import]
-        ElementCatalog Catalog;
 
         [Import]
         ITextStructureNavigatorSelectorService StructureNavigatorSelector;
@@ -29,7 +26,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             if (cache.TryGetValue(textView, out var itemSource))
                 return itemSource;
 
-            var source = new SampleCompletionSource(Catalog, StructureNavigatorSelector); // opportunity to pass in MEF parts
+            var source = new SampleCompletionSource(new ElementCatalog(), StructureNavigatorSelector); // opportunity to pass in MEF parts
             textView.Closed += (o, e) => cache.Remove(textView); // clean up memory as files are closed
             cache.Add(textView, source);
             return source;
