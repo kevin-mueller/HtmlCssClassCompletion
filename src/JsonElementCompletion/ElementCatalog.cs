@@ -3,6 +3,7 @@ using CSSParser;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using MoreLinq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace HtmlCssClassCompletion.JsonElementCompletion
 {
@@ -51,6 +53,10 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             var res = new List<CssClass>();
             var selectors = Parser.ParseCSS(File.ReadAllText(filePath))
                 .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
+
+            //TODO write better parser (some classes are missing right now!)
+            //TODO parse linked css files as well.
+
 
             foreach (var item in selectors)
             {
