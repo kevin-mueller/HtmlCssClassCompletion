@@ -18,8 +18,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
     {
         IDictionary<ITextView, IAsyncCompletionSource> cache = new Dictionary<ITextView, IAsyncCompletionSource>();
 
-        [Import]
-        ElementCatalog Cataolog;
+        ElementCatalog Cataolog = ElementCatalog.GetInstance();
 
         [Import]
         ITextStructureNavigatorSelectorService StructureNavigatorSelector;
