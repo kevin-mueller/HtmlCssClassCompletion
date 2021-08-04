@@ -17,7 +17,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
         }
 
-        ImmutableArray<char> commitChars = new char[] { ' ', '\'', '"', ',', '.', ';', ':' }.ToImmutableArray();
+        ImmutableArray<char> commitChars = new char[] { ' ', '"', '>', '/' }.ToImmutableArray();
 
         public IEnumerable<char> PotentialCommitCharacters => commitChars;
 

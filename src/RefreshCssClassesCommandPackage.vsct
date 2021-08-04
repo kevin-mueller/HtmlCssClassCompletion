@@ -56,7 +56,7 @@
         <Parent guid="guidRefreshCssClassesCommandPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Invoke RefreshCssClassesCommand</ButtonText>
+          <ButtonText>Scan all Projects for CSS Classes</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -68,7 +68,7 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\RefreshCssClassesCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
+      <Bitmap guid="guidImages" href="Resources\RefreshCssClassesCommand.png" usedList="bmpPic1"/>
     </Bitmaps>
   </Commands>
 

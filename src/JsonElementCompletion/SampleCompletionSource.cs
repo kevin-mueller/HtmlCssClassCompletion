@@ -41,8 +41,23 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
-            var tokenSpan = FindTokenSpanAtPosition(triggerLocation);
-            return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
+
+            //check if we are in the class= context
+            var lineStart = triggerLocation.GetContainingLine().Start;
+            var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
+            var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
+
+            if (textBeforeCaret.IndexOf("class=", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                var items = Regex.Split(textBeforeCaret, "class=", RegexOptions.IgnoreCase);
+                if (items[1].Count(x => (x == '"')) == 1)
+                {
+                    var tokenSpan = FindTokenSpanAtPosition(triggerLocation);
+                    return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
+                }
+            }
+
+            return CompletionStartData.DoesNotParticipateInCompletion;
         }
 
         private SnapshotSpan FindTokenSpanAtPosition(SnapshotPoint triggerLocation)
@@ -96,20 +111,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         public async Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
         {
-            // See whether we are in a class= context.
-
-            var lineStart = triggerLocation.GetContainingLine().Start;
-            var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
-            var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
-
-            if (textBeforeCaret.IndexOf("class=", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                var items = Regex.Split(textBeforeCaret, "class=", RegexOptions.IgnoreCase);
-                if (items[1].Count(x => (x == '"')) == 1)
-                    return await Task.FromResult(new CompletionContext(Catalog.Classes.Select(n => MakeItemFromElement(n)).ToImmutableArray()));
-            }
-
-            return null;
+            return await Task.FromResult(new CompletionContext(Catalog.Classes.Select(n => MakeItemFromElement(n)).ToImmutableArray()));
         }
 
         /// <summary>

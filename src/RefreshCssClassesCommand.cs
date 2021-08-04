@@ -27,7 +27,7 @@ namespace AsyncCompletionSample
     {
         ElementCatalog Catalog = ElementCatalog.GetInstance();
 
-        private static IVsStatusbar StatusBar;
+        private IVsStatusbar StatusBar;
 
         /// <summary>
         /// Command ID.
@@ -110,63 +110,10 @@ namespace AsyncCompletionSample
 
             SetStatusMessage("Caching Css Classes...");
 
-            _ = Task.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                var totalFiles = 0;
-
-                foreach (var item in projects)
-                {
-                    var folderPath = new FileInfo(((Project)item).FileName).DirectoryName;
-                    var files = new DirectoryInfo(folderPath).GetFiles("*.css", SearchOption.AllDirectories);
-                    totalFiles += files.Length;
-
-                    foreach (var file in files)
-                    {
-                        Catalog.Classes.AddRange(await GetCssClassesAsync(file.FullName));
-                    }
-                }
-
-                Catalog.Classes = Catalog.Classes.OrderBy(x => x.Name).ToList();
-                Catalog.Classes = Catalog.Classes.DistinctBy(x => x.Name).ToList();
-
-                SetStatusMessage($"Finished caching of css classes. Found {Catalog.Classes.Count} classes in {totalFiles} files.");
-            });
+            Catalog.RefreshClasses(projects, this);
         }
 
-        private async Task<List<CssClass>> GetCssClassesAsync(string filePath)
-        {
-            var res = new List<CssClass>();
-            var selectors = Parser.ParseCSS(File.ReadAllText(filePath))
-                .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
-
-            foreach (var item in selectors)
-            {
-                string valueCleaned;
-                if (item.Value.StartsWith("."))
-                {
-                    valueCleaned = item.Value.TrimPrefix(".");
-
-                    valueCleaned = valueCleaned.Split(':')[0];
-                    valueCleaned = valueCleaned.Split('>')[0];
-                    valueCleaned = valueCleaned.Split(',')[0];
-                    valueCleaned = valueCleaned.Split('+')[0];
-                    valueCleaned = valueCleaned.Split('~')[0];
-                    valueCleaned = valueCleaned.Split('*')[0];
-                    valueCleaned = valueCleaned.Split('.')[0];
-
-                    valueCleaned = valueCleaned.Trim();
-
-                    res.Add(new CssClass(valueCleaned, filePath));
-                }
-            }
-
-            return res;
-        }
-
-
-
-        internal static void SetStatusMessage(string message)
+        internal void SetStatusMessage(string message)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
