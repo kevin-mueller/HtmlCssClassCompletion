@@ -59,9 +59,9 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             var selectors = Parser.ParseCSS(File.ReadAllText(filePath))
                 .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
 
-            //TODO parse linked css files as well.
-            //TODO restrain .razor.css intellisense to their corresponding .razor file! (isolated css support)
+            var fileName = filePath.Split(new[] { "\\" }, StringSplitOptions.None).LastOrDefault();
 
+            //TODO parse linked css files as well.
 
             foreach (var item in selectors)
             {
@@ -70,7 +70,18 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
                     var tokens = item.Value.TrimPrefix(".").Split('.');
                     foreach (var token in tokens)
                     {
-                        res.Add(new CssClass(cleanValue(token), filePath.Split(new[] { "\\" }, StringSplitOptions.None).LastOrDefault()));
+                        var finalNameValue = cleanValue(token);
+
+                        var existing = Classes.FirstOrDefault(x => x.Name == finalNameValue);
+                        if (existing == null)
+                        {
+                            res.Add(new CssClass(finalNameValue, new List<string> { fileName }));
+                        }
+                        else
+                        {
+                            if (!existing.FileNames.Contains(fileName))
+                                existing.FileNames.Add(fileName);
+                        }
                     }
                 }
             }
@@ -97,12 +108,12 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         public class CssClass
         {
             public string Name { get; }
-            public string FileName { get; }
+            public List<string> FileNames { get; } = new List<string>();
 
-            internal CssClass(string name, string fileName)
+            internal CssClass(string name, List<string> fileNames)
             {
                 Name = name;
-                FileName = fileName;
+                FileNames = fileNames;
             }
         }
     }

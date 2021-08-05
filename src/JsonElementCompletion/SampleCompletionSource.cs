@@ -125,11 +125,9 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             {
                 //isolated css context
                 //TODO if the css class exists in multiple isolated contexts, it will only be present once in the global class list
-                //     because of this, it won't always show up in the right context.
-                //     FileName Property as a List maybe?
-                if (element.FileName.EndsWith(".razor.css"))
+                if (element.FileNames.All(x => x.EndsWith(".razor.css")))
                 {
-                    if (!currentFileName.Equals(element.FileName.Replace(".css", "")))
+                    if (!element.FileNames.Any(x => x.Replace(".css", "") == currentFileName))
                     {
                         continue;
                     }
@@ -165,7 +163,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
             if (item.Properties.TryGetProperty<ElementCatalog.CssClass>(nameof(ElementCatalog.CssClass), out var matchingElement))
             {
-                return await System.Threading.Tasks.Task.FromResult($"{matchingElement.Name} ({matchingElement.FileName})");
+                return await System.Threading.Tasks.Task.FromResult($"{matchingElement.Name} ({string.Join(", ", matchingElement.FileNames)})");
             }
             return null;
         }
