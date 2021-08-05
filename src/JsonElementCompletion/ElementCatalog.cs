@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -32,31 +33,66 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             _ = System.Threading.Tasks.Task.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 var totalFiles = 0;
+                var cssContentFailedToDownload = new List<Uri>();
 
                 foreach (var item in projects)
                 {
                     var folderPath = new FileInfo(((Project)item).FileName).DirectoryName;
                     var files = new DirectoryInfo(folderPath).GetFiles("*.css", SearchOption.AllDirectories);
-                    totalFiles += files.Length;
+
+                    var htmlFiles = new DirectoryInfo(folderPath).GetFiles("*.*html", SearchOption.AllDirectories);
+                    totalFiles += files.Length + htmlFiles.Length;
+
+                    var cssFileUrls = GetCdnUrlsFromHtmlFiles(htmlFiles);
 
                     foreach (var file in files)
                     {
-                        Classes.AddRange(GetCssClasses(file.FullName));
+                        Classes.AddRange(GetCssClasses(File.ReadAllText(file.FullName), file.FullName));
+                    }
+
+                    foreach (var fileUrl in cssFileUrls)
+                    {
+                        try
+                        {
+                            Classes.AddRange(GetCssClasses(await new HttpClient().GetStringAsync(fileUrl), fileUrl.AbsoluteUri));
+                        }
+                        catch (HttpRequestException)
+                        {
+                            cssContentFailedToDownload.Add(fileUrl);
+                        }
                     }
                 }
 
                 Classes = Classes.OrderBy(x => x.Name).ToList();
                 Classes = Classes.DistinctBy(x => x.Name).ToList();
 
-                statusBar.SetText($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.");
+                if (cssContentFailedToDownload.Any())
+                {
+                    statusBar.SetText($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files. " +
+                        $"{cssContentFailedToDownload.Count} external CSS File(s) failed to download.");
+                }
+                else
+                {
+                    statusBar.SetText($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.");
+                }
             });
         }
 
-        private List<CssClass> GetCssClasses(string filePath)
+        private List<Uri> GetCdnUrlsFromHtmlFiles(FileInfo[] htmlFiles)
+        {
+            var cdnUrls = new List<Uri>();
+            //TODO implement parsing of html files.
+            //parse all link attributes, check if they contain the rel="stylesheet" attribute and add their href content to the list.
+
+            return cdnUrls;
+        }
+
+        private List<CssClass> GetCssClasses(string cssContent, string filePath)
         {
             var res = new List<CssClass>();
-            var selectors = Parser.ParseCSS(File.ReadAllText(filePath))
+            var selectors = Parser.ParseCSS(cssContent)
                 .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
 
             var fileName = filePath.Split(new[] { "\\" }, StringSplitOptions.None).LastOrDefault();
