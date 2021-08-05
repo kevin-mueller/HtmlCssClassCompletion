@@ -1,6 +1,10 @@
-﻿using Microsoft.VisualStudio;
+﻿using EnvDTE;
+using HtmlCssClassCompletion.JsonElementCompletion;
+using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Events;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System;
@@ -11,6 +15,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Task = System.Threading.Tasks.Task;
 
 namespace AsyncCompletionSample
@@ -34,6 +39,7 @@ namespace AsyncCompletionSample
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(RefreshCssClassesCommandPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class RefreshCssClassesCommandPackage : AsyncPackage
@@ -67,7 +73,9 @@ namespace AsyncCompletionSample
         {
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
-            await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
             await RefreshCssClassesCommand.InitializeAsync(this);
         }
 

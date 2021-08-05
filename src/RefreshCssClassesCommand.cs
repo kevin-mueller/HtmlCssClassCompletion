@@ -1,8 +1,11 @@
 ﻿using CSSParser;
 using EnvDTE;
 using HtmlCssClassCompletion.JsonElementCompletion;
+using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -27,7 +30,7 @@ namespace AsyncCompletionSample
     {
         ElementCatalog Catalog = ElementCatalog.GetInstance();
 
-        private IVsStatusbar StatusBar;
+        private static IVsStatusbar StatusBar;
 
         /// <summary>
         /// Command ID.
@@ -90,8 +93,42 @@ namespace AsyncCompletionSample
             // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
+
+            StatusBar ??= Package.GetGlobalService(typeof(IVsStatusbar)) as IVsStatusbar;
+
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             Instance = new RefreshCssClassesCommand(package, commandService);
+
+            bool isSolutionLoaded = await Instance.IsSolutionLoadedAsync();
+
+            if (isSolutionLoaded)
+            {
+                Instance.HandleOpenSolution();
+            }
+
+            Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterBackgroundSolutionLoadComplete += Instance.HandleOpenSolution;
+        }
+
+        private void HandleOpenSolution(object sender = null, EventArgs e = null)
+        {
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            DTE dte = (DTE)ServiceProvider.GetServiceAsync(typeof(DTE)).Result;
+            Projects projects = dte.Solution.Projects;
+
+            ElementCatalog.GetInstance().RefreshClasses(projects, StatusBar);
+        }
+
+        private async Task<bool> IsSolutionLoadedAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var solService = await ServiceProvider.GetServiceAsync(typeof(SVsSolution)) as IVsSolution;
+            Assumes.Present(solService);
+
+            ErrorHandler.ThrowOnFailure(solService.GetProperty((int)__VSPROPID.VSPROPID_IsSolutionOpen, out object value));
+
+            return value is bool isSolOpen && isSolOpen;
         }
 
         /// <summary>
@@ -108,21 +145,7 @@ namespace AsyncCompletionSample
             DTE dte = (DTE)ServiceProvider.GetServiceAsync(typeof(DTE)).Result;
             Projects projects = dte.Solution.Projects;
 
-            SetStatusMessage("Caching Css Classes...");
-
-            Catalog.RefreshClasses(projects, this);
-        }
-
-        internal void SetStatusMessage(string message)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (StatusBar == null)
-            {
-                StatusBar = Package.GetGlobalService(typeof(IVsStatusbar)) as IVsStatusbar;
-            }
-
-            StatusBar.SetText(message);
+            Catalog.RefreshClasses(projects, StatusBar);
         }
     }
 }

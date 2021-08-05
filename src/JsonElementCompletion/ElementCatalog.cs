@@ -2,6 +2,7 @@
 using CSSParser;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using MoreLinq;
 using Newtonsoft.Json;
 using System;
@@ -22,8 +23,12 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         public List<CssClass> Classes { get; set; } = new List<CssClass>();
 
-        public void RefreshClasses(Projects projects, RefreshCssClassesCommand context)
+        public void RefreshClasses(Projects projects, IVsStatusbar statusBar)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            statusBar.SetText("Caching Css Classes...");
+
             _ = System.Threading.Tasks.Task.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -44,7 +49,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
                 Classes = Classes.OrderBy(x => x.Name).ToList();
                 Classes = Classes.DistinctBy(x => x.Name).ToList();
 
-                context.SetStatusMessage($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.");
+                statusBar.SetText($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.");
             });
         }
 
