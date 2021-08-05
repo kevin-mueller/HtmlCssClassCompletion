@@ -11,7 +11,7 @@ namespace HtmlCssClassCompletion.CompletionItemManager
     [Export(typeof(IAsyncCompletionItemManagerProvider))]
     [Name("Better Html Css Class Intellisense")]
     [ContentType("HTMLXProjection")]
-    [Order(Before = PredefinedCompletionNames.DefaultCompletionItemManager)] // override the default item manager so that we can step through this code
+    [Order(Before = PredefinedCompletionNames.DefaultCompletionItemManager)]
     internal sealed class DefaultCompletionItemManagerProvider : IAsyncCompletionItemManagerProvider
     {
         [Import]

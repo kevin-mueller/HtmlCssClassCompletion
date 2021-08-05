@@ -54,33 +54,39 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             var selectors = Parser.ParseCSS(File.ReadAllText(filePath))
                 .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
 
-            //TODO write better parser (some classes are missing right now!)
             //TODO parse linked css files as well.
+            //TODO execute css class caching on projects loaded event.
 
 
             foreach (var item in selectors)
             {
-                string valueCleaned;
                 if (item.Value.StartsWith("."))
                 {
-                    valueCleaned = item.Value.TrimPrefix(".");
-
-                    valueCleaned = valueCleaned.Split(':')[0];
-                    valueCleaned = valueCleaned.Split('>')[0];
-                    valueCleaned = valueCleaned.Split(',')[0];
-                    valueCleaned = valueCleaned.Split('+')[0];
-                    valueCleaned = valueCleaned.Split('~')[0];
-                    valueCleaned = valueCleaned.Split('*')[0];
-                    valueCleaned = valueCleaned.Split('[')[0];
-                    valueCleaned = valueCleaned.Split('.')[0];
-
-                    valueCleaned = valueCleaned.Trim();
-
-                    res.Add(new CssClass(valueCleaned, filePath.Split(new[] { "\\" }, StringSplitOptions.None).LastOrDefault()));
+                    var tokens = item.Value.TrimPrefix(".").Split('.');
+                    foreach (var token in tokens)
+                    {
+                        res.Add(new CssClass(cleanValue(token), filePath.Split(new[] { "\\" }, StringSplitOptions.None).LastOrDefault()));
+                    }
                 }
             }
 
             return res;
+
+            static string cleanValue(string value)
+            {
+                var valueCleaned = value;
+                valueCleaned = valueCleaned.Split(':')[0];
+                valueCleaned = valueCleaned.Split('>')[0];
+                valueCleaned = valueCleaned.Split(',')[0];
+                valueCleaned = valueCleaned.Split('+')[0];
+                valueCleaned = valueCleaned.Split('~')[0];
+                valueCleaned = valueCleaned.Split('*')[0];
+                valueCleaned = valueCleaned.Split('[')[0];
+                valueCleaned = valueCleaned.Split(')')[0];
+                //valueCleaned = valueCleaned.Split('.')[0];
+
+                return valueCleaned.Trim();
+            }
         }
 
         public class CssClass

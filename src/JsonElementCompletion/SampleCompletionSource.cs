@@ -21,7 +21,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         private ITextStructureNavigatorSelectorService StructureNavigatorSelector { get; }
 
         // ImageElements may be shared by CompletionFilters and CompletionItems. The automationName parameter should be localized.
-        static ImageElement MetalIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 2708), "Metal");
+        static ImageElement DefaultIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 1747), "CssClass");
 
         public SampleCompletionSource(ElementCatalog catalog, ITextStructureNavigatorSelectorService structureNavigatorSelector)
         {
@@ -122,7 +122,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             var item = new CompletionItem(
                 displayText: element.Name,
                 source: this,
-                icon: MetalIcon);
+                icon: DefaultIcon);
 
             // Each completion item we build has a reference to the element in the property bag.
             // We use this information when we construct the tooltip.
@@ -138,7 +138,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
             if (item.Properties.TryGetProperty<ElementCatalog.CssClass>(nameof(ElementCatalog.CssClass), out var matchingElement))
             {
-                return await Task.FromResult($"{matchingElement.Name} [From File: {matchingElement.FileName}]");
+                return await Task.FromResult($"{matchingElement.Name} ({matchingElement.FileName})");
             }
             return null;
         }
