@@ -1,6 +1,8 @@
-﻿using Microsoft.VisualStudio.Core.Imaging;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Operations;
@@ -19,6 +21,9 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
     {
         private ElementCatalog Catalog { get; }
         private ITextStructureNavigatorSelectorService StructureNavigatorSelector { get; }
+        
+        private DTE DTE;
+        private string currentFileName;
 
         // ImageElements may be shared by CompletionFilters and CompletionItems. The automationName parameter should be localized.
         static ImageElement DefaultIcon = new ImageElement(new ImageId(new Guid("ae27a6b0-e345-4288-96df-5eaf394ee369"), 1747), "CssClass");
@@ -27,6 +32,10 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
             Catalog = catalog;
             StructureNavigatorSelector = structureNavigatorSelector;
+            
+            ThreadHelper.ThrowIfNotOnUIThread();
+            DTE ??= Package.GetGlobalService(typeof(DTE)) as DTE;
+            currentFileName = DTE.ActiveDocument.Name;
         }
 
         public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
@@ -111,7 +120,25 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         public async Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
         {
-            return await Task.FromResult(new CompletionContext(Catalog.Classes.Select(n => MakeItemFromElement(n)).ToImmutableArray()));
+            var filteredList = new List<CompletionItem>();
+            foreach (var element in Catalog.Classes)
+            {
+                //isolated css context
+                //TODO if the css class exists in multiple isolated contexts, it will only be present once in the global class list
+                //     because of this, it won't always show up in the right context.
+                //     FileName Property as a List maybe?
+                if (element.FileName.EndsWith(".razor.css"))
+                {
+                    if (!currentFileName.Equals(element.FileName.Replace(".css", "")))
+                    {
+                        continue;
+                    }
+                }
+
+                filteredList.Add(MakeItemFromElement(element));
+            }
+
+            return await System.Threading.Tasks.Task.FromResult(new CompletionContext(filteredList.ToImmutableArray()));
         }
 
         /// <summary>
@@ -138,7 +165,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
             if (item.Properties.TryGetProperty<ElementCatalog.CssClass>(nameof(ElementCatalog.CssClass), out var matchingElement))
             {
-                return await Task.FromResult($"{matchingElement.Name} ({matchingElement.FileName})");
+                return await System.Threading.Tasks.Task.FromResult($"{matchingElement.Name} ({matchingElement.FileName})");
             }
             return null;
         }

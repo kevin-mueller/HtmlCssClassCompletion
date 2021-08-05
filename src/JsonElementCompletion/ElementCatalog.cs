@@ -60,7 +60,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
                 .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
 
             //TODO parse linked css files as well.
-            //TODO execute css class caching on projects loaded event.
+            //TODO restrain .razor.css intellisense to their corresponding .razor file! (isolated css support)
 
 
             foreach (var item in selectors)

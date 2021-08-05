@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.PatternMatching;
@@ -25,6 +26,7 @@ namespace HtmlCssClassCompletion.CompletionItemManager
             (IAsyncCompletionSession session, AsyncCompletionSessionDataSnapshot data, CancellationToken token)
         {
             var view = session.TextView;
+
             // Filter by text
             var filterText = session.ApplicableToSpan.GetText(data.Snapshot);
             if (string.IsNullOrWhiteSpace(filterText))
