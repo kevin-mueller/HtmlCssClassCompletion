@@ -21,7 +21,7 @@ using System.Windows;
 using static HtmlCssClassCompletion.JsonElementCompletion.ElementCatalog;
 using Task = System.Threading.Tasks.Task;
 
-namespace AsyncCompletionSample
+namespace HtmlCssClassCompletion
 {
     /// <summary>
     /// Command handler

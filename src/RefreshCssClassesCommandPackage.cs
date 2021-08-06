@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Task = System.Threading.Tasks.Task;
 
-namespace AsyncCompletionSample
+namespace HtmlCssClassCompletion
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.

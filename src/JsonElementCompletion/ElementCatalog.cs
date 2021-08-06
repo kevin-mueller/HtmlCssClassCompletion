@@ -1,4 +1,4 @@
-﻿using AsyncCompletionSample;
+﻿using HtmlCssClassCompletion;
 using CSSParser;
 using EnvDTE;
 using HtmlAgilityPack;
