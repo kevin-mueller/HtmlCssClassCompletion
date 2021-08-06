@@ -124,7 +124,6 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
             foreach (var element in Catalog.Classes)
             {
                 //isolated css context
-                //TODO if the css class exists in multiple isolated contexts, it will only be present once in the global class list
                 if (element.FileNames.All(x => x.EndsWith(".razor.css")))
                 {
                     if (!element.FileNames.Any(x => x.Replace(".css", "") == currentFileName))

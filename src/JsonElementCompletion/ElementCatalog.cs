@@ -1,6 +1,7 @@
 ﻿using AsyncCompletionSample;
 using CSSParser;
 using EnvDTE;
+using HtmlAgilityPack;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using MoreLinq;
@@ -82,11 +83,22 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
         private List<Uri> GetCdnUrlsFromHtmlFiles(FileInfo[] htmlFiles)
         {
-            var cdnUrls = new List<Uri>();
-            //TODO implement parsing of html files.
-            //parse all link attributes, check if they contain the rel="stylesheet" attribute and add their href content to the list.
+            var cdnUrls = new List<string>();
 
-            return cdnUrls;
+            foreach (var htmlFilePath in htmlFiles)
+            {
+                var doc = new HtmlDocument();
+                doc.Load(htmlFilePath.FullName);
+
+                var linkNodes = doc.DocumentNode.SelectNodes("//link[@rel='stylesheet']");
+                if (linkNodes == null)
+                    continue;
+
+                cdnUrls.AddRange(linkNodes.Select(x => x.GetAttributeValue("href", string.Empty))
+                    .Where(x => x.StartsWith("https://") || x.StartsWith("http://")));
+            }
+
+            return cdnUrls.Where(x => x != string.Empty).Select(y => new Uri(y)).ToList();
         }
 
         private List<CssClass> GetCssClasses(string cssContent, string filePath)
@@ -96,8 +108,6 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
                 .Where(x => x.CharacterCategorisation == CSSParser.ContentProcessors.CharacterCategorisationOptions.SelectorOrStyleProperty);
 
             var fileName = filePath.Split(new[] { "\\" }, StringSplitOptions.None).LastOrDefault();
-
-            //TODO parse linked css files as well.
 
             foreach (var item in selectors)
             {

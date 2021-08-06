@@ -109,6 +109,9 @@
     <PackageReference Include="EnvDTE">
       <Version>16.11.31603.221</Version>
     </PackageReference>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.11.34</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.CoreUtility">
       <Version>16.11.31</Version>
     </PackageReference>
