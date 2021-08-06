@@ -10,6 +10,8 @@ This extension fixes all that, by improving the existing HTML intellisense with 
 
 The extension is currently in a very basic state, but the functionality is there.
 
+Visual Studio Marketplace: https://marketplace.visualstudio.com/items?itemName=KevinMueller.BetterHtmlRazorCssClassIntellisense
+
 ## How To Use:
 After installing, the extension should scan for .css files automatically once all projects and the extension are fully loaded.
 You can see the progress in the bottom left corner.
