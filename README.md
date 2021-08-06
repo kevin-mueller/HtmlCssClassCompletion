@@ -24,5 +24,5 @@ You should now be able to use the intellisense:
 
 ![image](https://user-images.githubusercontent.com/43059964/128539514-825f6282-2a02-468f-8ec6-abd622fc5ad5.png)
 
-## Have a feature idea?
+## Have a feature idea / found a bug?
 Feel free to create an issue in this repo. :)
