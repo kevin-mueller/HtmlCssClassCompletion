@@ -23,3 +23,6 @@ If you add new css files, you can re-scan all files by using Tools -> Scan all P
 You should now be able to use the intellisense:
 
 ![image](https://user-images.githubusercontent.com/43059964/128539514-825f6282-2a02-468f-8ec6-abd622fc5ad5.png)
+
+## Have a feature idea?
+Feel free to create an issue in this repo. :)
