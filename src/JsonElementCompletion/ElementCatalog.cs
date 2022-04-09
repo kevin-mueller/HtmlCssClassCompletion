@@ -1,7 +1,6 @@
 ﻿using HtmlCssClassCompletion;
 using CSSParser;
 using EnvDTE;
-using HtmlAgilityPack;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using MoreLinq;
@@ -15,6 +14,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using HtmlAgilityPack;
 
 namespace HtmlCssClassCompletion.JsonElementCompletion
 {
@@ -31,7 +31,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
             statusBar.SetText("Caching Css Classes...");
 
-            _ = System.Threading.Tasks.Task.Run(async delegate
+            _ = Task.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -40,11 +40,40 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
 
                 foreach (var item in projects)
                 {
-                    var folderPath = new FileInfo(((Project)item).FileName).DirectoryName;
-                    var files = new DirectoryInfo(folderPath).GetFiles("*.css", SearchOption.AllDirectories);
+                    string folderPath;
+                    try
+                    {
+                        folderPath = new FileInfo(((Project)item).FileName).DirectoryName;
+                    }
+                    catch (Exception ex)
+                    {
+                        //if project fails to cast, skip
+                        continue;
+                    }
 
+                    //get all .css files directly from the project folder
+                    var files = new DirectoryInfo(folderPath).GetFiles("*.css", SearchOption.AllDirectories).ToList();
+
+                    //get all html files directly from the project folder (to extract cdn css files from it)
                     var htmlFiles = new DirectoryInfo(folderPath).GetFiles("*.*html", SearchOption.AllDirectories);
-                    totalFiles += files.Length + htmlFiles.Length;
+
+                    //also search package references of the project, in order to get the css files from nuget packages
+                    var vsproject = ((Project)item).Object as VSLangProj.VSProject;
+                    var packageFiles = new List<FileInfo>();
+
+                    var webPackages = vsproject.References.Flatten().Select(x =>
+                        new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault()).Where(x => x != null);
+
+
+                    foreach (var webPackage in webPackages)
+                    {
+                        packageFiles.AddRange(webPackage.GetFiles("*.css", SearchOption.AllDirectories));
+                    }
+                    packageFiles.Sort();
+                    packageFiles = packageFiles.Distinct().ToList();
+                    files.AddRange(packageFiles);
+
+                    totalFiles += files.Count + htmlFiles.Length;
 
                     var cssFileUrls = GetCdnUrlsFromHtmlFiles(htmlFiles);
 

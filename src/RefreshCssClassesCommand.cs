@@ -1,24 +1,13 @@
-﻿using CSSParser;
-using EnvDTE;
+﻿using EnvDTE;
 using HtmlCssClassCompletion.JsonElementCompletion;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using MoreLinq;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using static HtmlCssClassCompletion.JsonElementCompletion.ElementCatalog;
 using Task = System.Threading.Tasks.Task;
 
 namespace HtmlCssClassCompletion
@@ -28,7 +17,7 @@ namespace HtmlCssClassCompletion
     /// </summary>
     internal sealed class RefreshCssClassesCommand
     {
-        ElementCatalog Catalog = ElementCatalog.GetInstance();
+        readonly ElementCatalog Catalog = ElementCatalog.GetInstance();
 
         private static IVsStatusbar StatusBar;
 
@@ -40,7 +29,7 @@ namespace HtmlCssClassCompletion
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("f992657c-635a-4b3e-9d97-6e083ffaf4e7");
+        public static readonly Guid CommandSet = new("f992657c-635a-4b3e-9d97-6e083ffaf4e7");
 
         /// <summary>
         /// VS Package that provides this command, not null.
@@ -75,7 +64,7 @@ namespace HtmlCssClassCompletion
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
+        private IAsyncServiceProvider ServiceProvider
         {
             get
             {
@@ -105,7 +94,6 @@ namespace HtmlCssClassCompletion
             {
                 Instance.HandleOpenSolution();
             }
-
             Microsoft.VisualStudio.Shell.Events.SolutionEvents.OnAfterBackgroundSolutionLoadComplete += Instance.HandleOpenSolution;
         }
 
