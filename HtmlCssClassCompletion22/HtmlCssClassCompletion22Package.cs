@@ -1,4 +1,7 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using Community.VisualStudio.Toolkit;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -24,11 +27,12 @@ namespace HtmlCssClassCompletion22
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(HtmlCssClassCompletion22Package.PackageGuidString)]
     public sealed class HtmlCssClassCompletion22Package : AsyncPackage
     {
         /// <summary>
-        /// HtmlCssClassCompletion22Package GUID string.
+        /// HtmlCssClassCompletion22Package GUI5D string.
         /// </summary>
         public const string PackageGuidString = "70e49e7d-bc32-4db3-be4c-9b13b3bad2f0";
 
@@ -45,9 +49,19 @@ namespace HtmlCssClassCompletion22
         {
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
+            
+
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            await this.RegisterCommandsAsync();
+
+            VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterOpenProject;
         }
 
+        private async void OnAfterOpenProject(Project project)
+        {
+            await ElementCatalog.GetInstance().RefreshClassesAsync().ConfigureAwait(false);
+        }
         #endregion
     }
 }

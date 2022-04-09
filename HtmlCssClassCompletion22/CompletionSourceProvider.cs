@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace HtmlCssClassCompletion22
 {
     [Export(typeof(ICompletionSourceProvider))]
-    [ContentType("code")]
+    [ContentType("razor")]
     [Name("token completion")]
     internal class CompletionSourceProvider : ICompletionSourceProvider
     {

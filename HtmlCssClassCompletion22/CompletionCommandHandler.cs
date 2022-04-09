@@ -130,7 +130,7 @@ namespace HtmlCssClassCompletion22
 
     [Export(typeof(IVsTextViewCreationListener))]
     [Name("token completion handler")]
-    [ContentType("code")]
+    [ContentType("razor")]
     [TextViewRole(PredefinedTextViewRoles.Editable)]
     internal class CompletionHandlerProvider : IVsTextViewCreationListener
     {
