@@ -50,11 +50,12 @@ namespace HtmlCssClassCompletion22
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             
-
+            //TODO is this necessary?
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             await this.RegisterCommandsAsync();
 
+            //TODO this part is simply not called...
             VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterOpenProject;
         }
 
