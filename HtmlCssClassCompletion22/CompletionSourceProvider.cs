@@ -23,7 +23,7 @@ namespace HtmlCssClassCompletion22
         ElementCatalog Cataolog = ElementCatalog.GetInstance();
 
         [Import]
-        ITextStructureNavigatorSelectorService StructureNavigatorSelector;
+        readonly ITextStructureNavigatorSelectorService StructureNavigatorSelector;
 
         public IAsyncCompletionSource GetOrCreate(ITextView textView)
         {

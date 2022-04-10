@@ -74,7 +74,7 @@ namespace HtmlCssClassCompletion22
             //pass along the command so the char is added to the buffer
             int retVal = m_nextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            if (!typedChar.Equals(char.MinValue) && char.IsLetterOrDigit(typedChar))
+            if (!typedChar.Equals(char.MinValue) && (char.IsLetter(typedChar) || typedChar == '-'))
             {
                 if (m_session == null || m_session.IsDismissed) // If there is no active session, bring up completion
                 {
@@ -147,7 +147,7 @@ namespace HtmlCssClassCompletion22
             if (textView == null)
                 return;
 
-            CompletionCommandHandler createCommandHandler() => new CompletionCommandHandler(textViewAdapter, textView, this);
+            CompletionCommandHandler createCommandHandler() => new(textViewAdapter, textView, this);
             textView.Properties.GetOrCreateSingletonProperty(createCommandHandler);
         }
     }

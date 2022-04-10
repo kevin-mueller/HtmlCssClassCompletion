@@ -162,7 +162,7 @@ namespace HtmlCssClassCompletion22
         {
             if (item.Properties.TryGetProperty<ElementCatalog.CssClass>(nameof(ElementCatalog.CssClass), out var matchingElement))
             {
-                return await Task.FromResult($"{matchingElement.Name} ({string.Join(", ", matchingElement.FileNames)})");
+                return await Task.FromResult($"{matchingElement.Name} ({string.Join(", ", matchingElement.FileNames.Select(x => x.Split('/').Last()))})");
             }
             return null;
         }

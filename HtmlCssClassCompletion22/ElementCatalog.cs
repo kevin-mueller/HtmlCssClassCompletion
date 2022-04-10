@@ -69,12 +69,12 @@ namespace HtmlCssClassCompletion22
                 packageFiles = packageFiles.Distinct().ToList();
                 files.AddRange(packageFiles);
 
-               
+
 
                 var cssFileUrls = GetCdnUrlsFromHtmlFiles(htmlFiles);
-                
+
                 totalFiles += files.Count + cssFileUrls.Count;
-                
+
                 foreach (var file in files)
                 {
                     Classes.AddRange(GetCssClasses(File.ReadAllText(file.FullName), file.FullName));
