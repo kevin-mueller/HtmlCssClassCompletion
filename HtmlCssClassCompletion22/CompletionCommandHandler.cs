@@ -79,7 +79,7 @@ namespace HtmlCssClassCompletion22
                 if (m_session == null || m_session.IsDismissed) // If there is no active session, bring up completion
                 {
                     TriggerCompletion();
-                    m_session.Filter();
+                    m_session?.Filter();
                 }
                 else    //the completion session is already active, so just filter
                 {

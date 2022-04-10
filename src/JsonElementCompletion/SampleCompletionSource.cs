@@ -21,7 +21,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
     {
         private ElementCatalog Catalog { get; }
         private ITextStructureNavigatorSelectorService StructureNavigatorSelector { get; }
-        
+
         private DTE DTE;
         private string currentFileName;
 
@@ -32,7 +32,7 @@ namespace HtmlCssClassCompletion.JsonElementCompletion
         {
             Catalog = catalog;
             StructureNavigatorSelector = structureNavigatorSelector;
-            
+
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE ??= Package.GetGlobalService(typeof(DTE)) as DTE;
             currentFileName = DTE.ActiveDocument.Name;

@@ -35,14 +35,14 @@ namespace HtmlCssClassCompletion22
             var projects = dte.Solution.Projects;
 
 
-            var test1 = await  VS.Solutions.GetAllProjectHierarchiesAsync();
+            var test1 = await VS.Solutions.GetAllProjectHierarchiesAsync();
 
             var totalFiles = 0;
             var cssContentFailedToDownload = new List<Uri>();
 
             foreach (var project in projects)
             {
-                
+
                 var folderPath = new FileInfo(((EnvDTE.Project)project).FullName).DirectoryName;
 
                 //get all .css files directly from the project folder
@@ -69,10 +69,12 @@ namespace HtmlCssClassCompletion22
                 packageFiles = packageFiles.Distinct().ToList();
                 files.AddRange(packageFiles);
 
-                totalFiles += files.Count + htmlFiles.Length;
+               
 
                 var cssFileUrls = GetCdnUrlsFromHtmlFiles(htmlFiles);
-
+                
+                totalFiles += files.Count + cssFileUrls.Count;
+                
                 foreach (var file in files)
                 {
                     Classes.AddRange(GetCssClasses(File.ReadAllText(file.FullName), file.FullName));
@@ -96,12 +98,12 @@ namespace HtmlCssClassCompletion22
 
             if (cssContentFailedToDownload.Any())
             {
-                await VS.StatusBar.ShowProgressAsync($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files. " +
-                    $"{cssContentFailedToDownload.Count} external CSS File(s) failed to download.", 2, 2);
+                await VS.StatusBar.ShowMessageAsync($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files. " +
+                    $"{cssContentFailedToDownload.Count} external CSS File(s) failed to download.");
             }
             else
             {
-                await VS.StatusBar.ShowProgressAsync($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.", 2, 2);
+                await VS.StatusBar.ShowMessageAsync($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.");
             }
         }
 
