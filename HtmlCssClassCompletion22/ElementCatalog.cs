@@ -29,7 +29,7 @@ namespace HtmlCssClassCompletion22
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            await VS.StatusBar.ShowProgressAsync("Caching Css Classes...", 1, 2);
+            await VS.StatusBar.ShowMessageAsync("Caching Css Classes...");
 
             DTE dte = await VS.GetServiceAsync<DTE, DTE>();
             var projects = dte.Solution.Projects;

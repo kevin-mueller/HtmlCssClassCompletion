@@ -60,7 +60,7 @@ namespace HtmlCssClassCompletion22
 
         private async void OnAfterOpenProject(Project project)
         {
-            await ElementCatalog.GetInstance().RefreshClassesAsync().ConfigureAwait(false);
+            await ElementCatalog.GetInstance().RefreshClassesAsync();
         }
         #endregion
     }
