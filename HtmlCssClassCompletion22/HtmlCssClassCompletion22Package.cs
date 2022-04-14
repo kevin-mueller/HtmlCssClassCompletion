@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
+using NuGet.VisualStudio.Contracts;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -27,6 +29,7 @@ namespace HtmlCssClassCompletion22
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(HtmlCssClassCompletion22Package.PackageGuidString)]
     public sealed class HtmlCssClassCompletion22Package : AsyncPackage
@@ -47,19 +50,16 @@ namespace HtmlCssClassCompletion22
         /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            // When initialized asynchronously, the current thread may be a background thread at this point.
-            // Do any initialization that requires the UI thread after switching to the UI thread.
-            
             //TODO is this necessary?
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             await this.RegisterCommandsAsync();
 
             //TODO this part is simply not called...
-            VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterOpenProject;
+            VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterLoadProject;
         }
 
-        private async void OnAfterOpenProject(Project project)
+        private async void OnAfterLoadProject(Project project)
         {
             await ElementCatalog.GetInstance().RefreshClassesAsync();
         }

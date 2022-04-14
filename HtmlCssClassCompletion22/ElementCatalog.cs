@@ -34,9 +34,6 @@ namespace HtmlCssClassCompletion22
             DTE dte = await VS.GetServiceAsync<DTE, DTE>();
             var projects = dte.Solution.Projects;
 
-
-            var test1 = await VS.Solutions.GetAllProjectHierarchiesAsync();
-
             var totalFiles = 0;
             var cssContentFailedToDownload = new List<Uri>();
 
