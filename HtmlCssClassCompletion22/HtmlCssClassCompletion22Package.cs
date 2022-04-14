@@ -56,7 +56,9 @@ namespace HtmlCssClassCompletion22
             VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterLoadProject;
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void OnAfterLoadProject(Project project)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             await ElementCatalog.GetInstance().RefreshClassesAsync();
         }
