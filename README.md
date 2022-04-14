@@ -4,7 +4,7 @@ The existing HTML intellisense for Visual Studio has a lot of limitations. It on
 This extension fixes all that, by improving the existing HTML intellisense with the following features:
 
 - Works in any project type.
-- Scans CSS files in the entire project structure, including referenced projects.
+- Scans CSS files in the entire project structure, including referenced projects, as well as nuget packages.
 - External CSS files, which are linked via the \<link> attribute in any .html/.cshtml file, will be scanned as well.
 - Isolated CSS support. CSS classes from \*.razor.css files, will only be shown in the corresponding \*.razor component.
 
