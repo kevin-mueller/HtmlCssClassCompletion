@@ -3,7 +3,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
-using NuGet.VisualStudio.Contracts;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -50,12 +49,10 @@ namespace HtmlCssClassCompletion22
         /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            //TODO is this necessary?
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             await this.RegisterCommandsAsync();
 
-            //TODO this part is simply not called...
             VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterLoadProject;
         }
 
