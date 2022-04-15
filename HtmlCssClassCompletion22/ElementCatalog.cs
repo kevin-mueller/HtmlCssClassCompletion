@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using HtmlAgilityPack;
 using Community.VisualStudio.Toolkit;
+using System.ComponentModel;
+using Microsoft.VisualStudio.TaskStatusCenter;
 
 namespace HtmlCssClassCompletion22
 {
@@ -27,9 +29,26 @@ namespace HtmlCssClassCompletion22
 
         public async Task RefreshClassesAsync()
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            IVsTaskStatusCenterService tsc = await VS.Services.GetTaskStatusCenterAsync();
 
-            await VS.StatusBar.ShowMessageAsync("Caching Css Classes...");
+            var options = default(TaskHandlerOptions);
+            options.Title = "Caching CSS Classes";
+            options.ActionsAfterCompletion = CompletionActions.None;
+            options.TaskSuccessMessage = "CSS Caching Finished.";
+
+            TaskProgressData data = default;
+            data.CanBeCanceled = true;
+
+            var handler = tsc.PreRegister(options, data);
+
+
+            var task = BackgroundTaskAsync(data, handler);
+            handler.RegisterTask(task);
+        }
+
+        private async Task BackgroundTaskAsync(TaskProgressData data, ITaskHandler handler)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             DTE dte = await VS.GetServiceAsync<DTE, DTE>();
             var projects = dte.Solution.Projects;
@@ -37,8 +56,13 @@ namespace HtmlCssClassCompletion22
             var totalFiles = 0;
             var cssContentFailedToDownload = new List<Uri>();
 
+            int currentStep = 0;
+            int totalSteps = projects.Count;
             foreach (var project in projects)
             {
+                data.PercentComplete = currentStep / totalSteps * 100;
+                data.ProgressText = $"Caching project {currentStep} of {totalSteps}";
+                handler.Progress.Report(data);
 
                 var folderPath = new FileInfo(((EnvDTE.Project)project).FullName).DirectoryName;
 
@@ -67,7 +91,6 @@ namespace HtmlCssClassCompletion22
                 files.AddRange(packageFiles);
 
 
-
                 var cssFileUrls = GetCdnUrlsFromHtmlFiles(htmlFiles);
 
                 totalFiles += files.Count + cssFileUrls.Count;
@@ -93,15 +116,22 @@ namespace HtmlCssClassCompletion22
             Classes = Classes.OrderBy(x => x.Name).ToList();
             Classes = Classes.DistinctBy(x => x.Name).ToList();
 
+            currentStep++;
+            data.PercentComplete = currentStep / totalSteps * 100;
+            
             if (cssContentFailedToDownload.Any())
             {
-                await VS.StatusBar.ShowMessageAsync($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files. " +
-                    $"{cssContentFailedToDownload.Count} external CSS File(s) failed to download.");
+                data.ProgressText = $"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files. " +
+                    $"{cssContentFailedToDownload.Count} external CSS File(s) failed to download.";
             }
             else
             {
-                await VS.StatusBar.ShowMessageAsync($"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files.");
+                data.ProgressText = $"Finished caching of CSS classes. Found {Classes.Count} classes in {totalFiles} files.";
             }
+
+            await VS.StatusBar.ShowMessageAsync(data.ProgressText);
+
+            handler.Progress.Report(data);
         }
 
         private List<Uri> GetCdnUrlsFromHtmlFiles(FileInfo[] htmlFiles)

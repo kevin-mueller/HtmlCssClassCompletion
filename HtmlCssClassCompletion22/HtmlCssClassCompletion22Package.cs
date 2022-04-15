@@ -3,7 +3,9 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
+using Microsoft.VisualStudio.Threading;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Task = System.Threading.Tasks.Task;
@@ -49,16 +51,23 @@ namespace HtmlCssClassCompletion22
         /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             await this.RegisterCommandsAsync();
 
             VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterLoadProject;
+            VS.Events.DocumentEvents.Saved += OnAfterDocumentSaved;
         }
 
-#pragma warning disable VSTHRD100 // Avoid async void methods
+        [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
+        public async void OnAfterDocumentSaved(string documentPath)
+        {
+            if (documentPath.EndsWith("css") || documentPath.EndsWith("html"))
+                await ElementCatalog.GetInstance().RefreshClassesAsync();
+        }
+
+        [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
         private async void OnAfterLoadProject(Project project)
-#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             await ElementCatalog.GetInstance().RefreshClassesAsync();
         }
