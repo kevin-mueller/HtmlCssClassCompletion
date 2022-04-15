@@ -1,5 +1,5 @@
 # Html Css Class Completion
-The existing HTML intellisense for Visual Studio has a lot of limitations. It only works if your project is a web-based project, and does not support razor class libraries. It only scans for .css files in the wwwroot directory, and it doesn't support anything fancy like the relatively new isolated CSS feature for razor components.
+The existing HTML/Razor intellisense for Visual Studio has a lot of limitations. It only works if your project is a web-based project, and does not support razor class libraries. It only scans for .css files in the wwwroot directory, and it doesn't support anything fancy like the relatively new isolated CSS feature for razor components.
 
 This extension fixes all that, by improving the existing HTML intellisense with the following features:
 
