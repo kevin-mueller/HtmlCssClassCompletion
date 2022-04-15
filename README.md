@@ -8,7 +8,7 @@ This extension fixes all that, by improving the existing HTML intellisense with 
 - External CSS files, which are linked via the \<link> attribute in any .html/.cshtml file, will be scanned as well.
 - Isolated CSS support. CSS classes from \*.razor.css files, will only be shown in the corresponding \*.razor component.
 
-Visual Studio Marketplace: https://marketplace.visualstudio.com/items?itemName=KevinMueller.BetterHtmlRazorCssClassIntellisense
+Visual Studio Marketplace: https://marketplace.visualstudio.com/items?itemName=KevinMueller.HtmlCssClassCompletion22
 
 ## How To Use:
 After installing, the extension should scan for .css files automatically once all projects and the extension are fully loaded.
