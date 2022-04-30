@@ -80,6 +80,9 @@ namespace HtmlCssClassCompletion22
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
         private async void OnAfterBackgroundSolutionLoadComplete()
         {
+            //yes I know, simply awaiting a delay is not the prettiest ways of making sure all references are present, but it's the only
+            //one I've found. There is no other event, that occures at a later stage, so this will have to suffice.
+            await Task.Delay(TimeSpan.FromSeconds(2));
             await ElementCatalog.GetInstance().RefreshClassesAsync();
         }
 
