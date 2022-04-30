@@ -50,6 +50,8 @@ namespace HtmlCssClassCompletion22
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            Classes.Clear();
+
             DTE dte = await VS.GetServiceAsync<DTE, DTE>();
             var projects = dte.Solution.Projects;
 

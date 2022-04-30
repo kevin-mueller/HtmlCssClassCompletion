@@ -91,7 +91,6 @@ namespace HtmlCssClassCompletion22
         {
             if (obj.Any(x => x.Name.EndsWith(".css")))
                 await ElementCatalog.GetInstance().RefreshClassesAsync();
-
         }
         #endregion        
     }
