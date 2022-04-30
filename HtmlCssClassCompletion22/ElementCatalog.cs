@@ -41,7 +41,6 @@ namespace HtmlCssClassCompletion22
 
             var handler = tsc.PreRegister(options, data);
 
-
             var task = BackgroundTaskAsync(data, handler);
             handler.RegisterTask(task);
         }

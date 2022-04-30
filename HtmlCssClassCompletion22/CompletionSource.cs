@@ -42,8 +42,9 @@ namespace HtmlCssClassCompletion22
         {
             // We don't trigger completion when user typed
             if (char.IsNumber(trigger.Character)         // a number
-                || char.IsPunctuation(trigger.Character) // punctuation
+                || (char.IsPunctuation(trigger.Character) && trigger.Character != '"') // punctuation (for some reason '"' counts as punctuation as well...)
                 || trigger.Character == '\n'             // new line
+                || trigger.Character == '='
                 || trigger.Reason == CompletionTriggerReason.Backspace
                 || trigger.Reason == CompletionTriggerReason.Deletion)
             {
@@ -59,7 +60,10 @@ namespace HtmlCssClassCompletion22
             if (textBeforeCaret.IndexOf("class=", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var items = Regex.Split(textBeforeCaret, "class=", RegexOptions.IgnoreCase);
-                if (items[1].Count(x => x == '"') == 1)
+                if (items?.Length < 2)
+                    return CompletionStartData.DoesNotParticipateInCompletion;
+
+                if (items[1] == "\"" || items[1] == string.Empty)
                 {
                     var tokenSpan = FindTokenSpanAtPosition(triggerLocation);
                     return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
