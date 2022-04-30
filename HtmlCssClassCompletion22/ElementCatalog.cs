@@ -74,7 +74,6 @@ namespace HtmlCssClassCompletion22
 
                 //also search package references of the project, in order to get the css files from nuget packages
 
-                //var vsproject = ((Project)item).Object as VSLangProj.VSProject;
                 var packageFiles = new List<FileInfo>();
 
                 var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;

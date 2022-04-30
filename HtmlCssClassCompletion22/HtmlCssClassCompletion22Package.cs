@@ -1,13 +1,23 @@
 ﻿using Community.VisualStudio.Toolkit;
+using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
+using MoreLinq;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Contracts;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using VSLangProj;
 using Task = System.Threading.Tasks.Task;
 
 namespace HtmlCssClassCompletion22
@@ -55,8 +65,9 @@ namespace HtmlCssClassCompletion22
 
             await this.RegisterCommandsAsync();
 
-            VS.Events.SolutionEvents.OnAfterOpenProject += OnAfterLoadProject;
+            VS.Events.SolutionEvents.OnAfterBackgroundSolutionLoadComplete += OnAfterBackgroundSolutionLoadComplete;
             VS.Events.DocumentEvents.Saved += OnAfterDocumentSaved;
+            VS.Events.ProjectItemsEvents.AfterAddProjectItems += OnAfterAddProjectItems;
         }
 
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
@@ -67,10 +78,18 @@ namespace HtmlCssClassCompletion22
         }
 
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
-        private async void OnAfterLoadProject(Project project)
+        private async void OnAfterBackgroundSolutionLoadComplete()
         {
             await ElementCatalog.GetInstance().RefreshClassesAsync();
         }
-        #endregion
+
+        [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
+        private async void OnAfterAddProjectItems(IEnumerable<SolutionItem> obj)
+        {
+            if (obj.Any(x => x.Name.EndsWith(".css")))
+                await ElementCatalog.GetInstance().RefreshClassesAsync();
+
+        }
+        #endregion        
     }
 }

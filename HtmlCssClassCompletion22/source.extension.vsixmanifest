@@ -2,12 +2,12 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
         <Identity Id="HtmlCssClassCompletion22.f7d5f572-a75f-454b-b2b7-505fff77ba8d" Version="1.0" Language="en-US" Publisher="Kevin Mueller" />
-        <DisplayName>Better Html/Razor Css Class Intellisense</DisplayName>
+        <DisplayName>Better Razor CSS Class Intellisense</DisplayName>
         <Description xml:space="preserve">A better html/razor class completion than the existing one.
 
 Features:
 - Works in any project type
-- Scans css files in the entire project structure, including referenced projects
+- Scans css files in the entire project structure, including referenced projects and nuget packages
 - External css files, which are link via the &lt;link&gt; attribute </Description>
         <MoreInfo>https://github.com/kevin-mueller/HtmlCssClassCompletion</MoreInfo>
         <Icon>Resources\RefreshCssClassesCommandPackage.png</Icon>
