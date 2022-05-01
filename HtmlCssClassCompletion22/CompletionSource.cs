@@ -120,6 +120,8 @@ namespace HtmlCssClassCompletion22
                     endOffset = 1;
                 else if (tokenText.EndsWith("\"></"))
                     endOffset = 4;
+                else if (tokenText.EndsWith("\">"))
+                    endOffset = 2;
             }
 
             return new SnapshotSpan(tokenSpan.GetStartPoint(snapshot) + startOffset, tokenSpan.GetEndPoint(snapshot) - endOffset);
