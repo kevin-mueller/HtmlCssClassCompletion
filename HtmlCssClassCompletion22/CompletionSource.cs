@@ -51,19 +51,18 @@ namespace HtmlCssClassCompletion22
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
-
             //check if we are in the class= context
             var lineStart = triggerLocation.GetContainingLine().Start;
             var spanBeforeCaret = new SnapshotSpan(lineStart, triggerLocation);
             var textBeforeCaret = triggerLocation.Snapshot.GetText(spanBeforeCaret);
 
-            if (textBeforeCaret.IndexOf("class=", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (textBeforeCaret.IndexOf("class=\"", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                var items = Regex.Split(textBeforeCaret, "class=", RegexOptions.IgnoreCase);
+                var items = Regex.Split(textBeforeCaret, "class=\"", RegexOptions.IgnoreCase);
                 if (items?.Length < 2)
                     return CompletionStartData.DoesNotParticipateInCompletion;
 
-                if (items[1] == "\"" || items[1] == string.Empty)
+                if (!items[1].Contains("\""))
                 {
                     var tokenSpan = FindTokenSpanAtPosition(triggerLocation);
                     return new CompletionStartData(CompletionParticipation.ProvidesItems, tokenSpan);
@@ -104,6 +103,8 @@ namespace HtmlCssClassCompletion22
             {
                 if (tokenText.StartsWith("\""))
                     startOffset = 1;
+                if (tokenText.StartsWith("=\""))
+                    startOffset = 2;
             }
             if (tokenText.Length - startOffset > 0)
             {
@@ -117,6 +118,8 @@ namespace HtmlCssClassCompletion22
                     endOffset = 1;
                 else if (tokenText.EndsWith("\""))
                     endOffset = 1;
+                else if (tokenText.EndsWith("\"></"))
+                    endOffset = 4;
             }
 
             return new SnapshotSpan(tokenSpan.GetStartPoint(snapshot) + startOffset, tokenSpan.GetEndPoint(snapshot) - endOffset);
