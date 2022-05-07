@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="HtmlCssClassCompletion22.f7d5f572-a75f-454b-b2b7-505fff77ba8d" Version="1.1" Language="en-US" Publisher="Kevin Mueller" />
+        <Identity Id="HtmlCssClassCompletion22.f7d5f572-a75f-454b-b2b7-505fff77ba8d" Version="1.11" Language="en-US" Publisher="Kevin Mueller" />
         <DisplayName>Better Razor CSS Class Intellisense</DisplayName>
         <Description xml:space="preserve">A better html/razor class completion than the existing one.
 
