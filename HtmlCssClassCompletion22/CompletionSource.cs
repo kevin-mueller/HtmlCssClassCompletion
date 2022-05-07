@@ -133,9 +133,9 @@ namespace HtmlCssClassCompletion22
             foreach (var element in Catalog.Classes)
             {
                 //isolated css context
-                if (element.FileNames.All(x => x.EndsWith(".razor.css")))
+                if (element.FileNames.All(x => x.EndsWith(".razor.css", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (!element.FileNames.Any(x => x.Replace(".css", "") == currentFileName))
+                    if (!element.FileNames.Any(x => x.Replace(".css", "").Equals(currentFileName, StringComparison.OrdinalIgnoreCase)))
                     {
                         continue;
                     }
