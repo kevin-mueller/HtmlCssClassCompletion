@@ -23,6 +23,13 @@ namespace HtmlCssClassCompletion22
     internal class ElementCatalog
     {
         private static ElementCatalog _instance;
+        private HttpClient _httpClient;
+
+        private ElementCatalog()
+        {
+            _httpClient = new HttpClient();
+        }
+
         internal static ElementCatalog GetInstance() => _instance ??= new ElementCatalog();
 
         public List<CssClass> Classes { get; set; } = new List<CssClass>();
@@ -41,31 +48,75 @@ namespace HtmlCssClassCompletion22
 
             var handler = tsc.PreRegister(options, data);
 
-            var task = BackgroundTaskAsync(data, handler);
+
+            var task = BackgroundTaskAsync(data, handler, await GetProjectPathsWithReferencesAsync());
             handler.RegisterTask(task);
         }
 
-        private async Task BackgroundTaskAsync(TaskProgressData data, ITaskHandler handler)
+        private async Task<Dictionary<string, List<DirectoryInfo>>> GetProjectPathsWithReferencesAsync()
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            Dictionary<string, List<DirectoryInfo>> projectPathsWithReferences = new();
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                //do any operations on the DTE object here (where we're still on the main thread)
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                DTE dte = await VS.GetServiceAsync<DTE, DTE>();
+                var projects = dte.Solution.Projects;
 
+
+                var projectPaths = projects.Flatten().Select(x =>
+                {
+                    ThreadHelper.ThrowIfNotOnUIThread();
+                    return ((EnvDTE.Project)x).FullName;
+                }).ToList();
+
+                foreach (var project in projects)
+                {
+                    var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;
+
+                    var webPackages = vsproject.References.Flatten().Select(x =>
+                    {
+                        try
+                        {
+                            return new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault();
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+                    }).Where(x => x != null);
+
+                    projectPathsWithReferences.Add(((EnvDTE.Project)project).FullName, webPackages.ToList());
+                }
+            });
+            return projectPathsWithReferences;
+        }
+
+        private async Task BackgroundTaskAsync(TaskProgressData data, ITaskHandler handler, Dictionary<string, List<DirectoryInfo>> projectPaths)
+        {
             Classes.Clear();
-
-            DTE dte = await VS.GetServiceAsync<DTE, DTE>();
-            var projects = dte.Solution.Projects;
 
             var totalFiles = 0;
             var cssContentFailedToDownload = new List<Uri>();
 
             int currentStep = 0;
-            int totalSteps = projects.Count;
-            foreach (var project in projects)
+            int totalSteps = projectPaths.Keys.Count;
+            foreach (var project in projectPaths)
             {
                 data.PercentComplete = currentStep / totalSteps * 100;
                 data.ProgressText = $"Caching project {currentStep} of {totalSteps}";
                 handler.Progress.Report(data);
 
-                var folderPath = new FileInfo(((EnvDTE.Project)project).FullName).DirectoryName;
+                string folderPath;
+                try
+                {
+                    folderPath = new FileInfo(project.Key).DirectoryName;
+                }
+                catch
+                {
+                    //might occure if the path is invald/contains invalid characters. in that case, skip this project.
+                    continue;
+                }
 
                 //get all .css files directly from the project folder
                 var files = new DirectoryInfo(folderPath).GetFiles("*.css", SearchOption.AllDirectories).ToList();
@@ -77,12 +128,7 @@ namespace HtmlCssClassCompletion22
 
                 var packageFiles = new List<FileInfo>();
 
-                var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;
-
-                var webPackages = vsproject.References.Flatten().Select(x =>
-                    new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault()).Where(x => x != null);
-
-                foreach (var webPackage in webPackages)
+                foreach (var webPackage in project.Value)
                 {
                     packageFiles.AddRange(webPackage.GetFiles("*.css", SearchOption.AllDirectories));
                 }
@@ -97,19 +143,30 @@ namespace HtmlCssClassCompletion22
 
                 foreach (var file in files)
                 {
-                    Classes.AddRange(GetCssClasses(File.ReadAllText(file.FullName), file.FullName));
+                    try
+                    {
+                        Classes.AddRange(GetCssClasses(File.ReadAllText(file.FullName), file.FullName));
+                    }
+                    catch
+                    {
+                        //skip if unable to parse.
+                        continue;
+                    }
                 }
 
                 foreach (var fileUrl in cssFileUrls)
                 {
-                    try
+                    await Task.Run(async delegate
                     {
-                        Classes.AddRange(GetCssClasses(await new HttpClient().GetStringAsync(fileUrl), fileUrl.AbsoluteUri));
-                    }
-                    catch (HttpRequestException)
-                    {
-                        cssContentFailedToDownload.Add(fileUrl);
-                    }
+                        try
+                        {
+                            Classes.AddRange(GetCssClasses(await _httpClient.GetStringAsync(fileUrl), fileUrl.AbsoluteUri));
+                        }
+                        catch (HttpRequestException)
+                        {
+                            cssContentFailedToDownload.Add(fileUrl);
+                        }
+                    });
                 }
             }
 
@@ -118,7 +175,7 @@ namespace HtmlCssClassCompletion22
 
             currentStep++;
             data.PercentComplete = currentStep / totalSteps * 100;
-            
+
             if (cssContentFailedToDownload.Any())
             {
                 data.ProgressText = $"Finished caching of css classes. Found {Classes.Count} classes in {totalFiles} files. " +
@@ -140,15 +197,23 @@ namespace HtmlCssClassCompletion22
 
             foreach (var htmlFilePath in htmlFiles)
             {
-                var doc = new HtmlDocument();
-                doc.Load(htmlFilePath.FullName);
+                try
+                {
+                    var doc = new HtmlDocument();
+                    doc.Load(htmlFilePath.FullName);
 
-                var linkNodes = doc.DocumentNode.SelectNodes("//link[@rel='stylesheet']");
-                if (linkNodes == null)
+                    var linkNodes = doc.DocumentNode.SelectNodes("//link[@rel='stylesheet']");
+                    if (linkNodes == null)
+                        continue;
+
+                    cdnUrls.AddRange(linkNodes.Select(x => x.GetAttributeValue("href", string.Empty))
+                        .Where(x => x.StartsWith("https://") || x.StartsWith("http://")));
+                }
+                catch
+                {
+                    //continue with next html file
                     continue;
-
-                cdnUrls.AddRange(linkNodes.Select(x => x.GetAttributeValue("href", string.Empty))
-                    .Where(x => x.StartsWith("https://") || x.StartsWith("http://")));
+                }
             }
 
             return cdnUrls.Where(x => x != string.Empty).Select(y => new Uri(y)).ToList();
