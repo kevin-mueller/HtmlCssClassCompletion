@@ -67,26 +67,33 @@ namespace HtmlCssClassCompletion22
                 var projectPaths = projects.Flatten().Select(x =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
-                    return ((EnvDTE.Project)x).FullName;
-                }).ToList();
+                    return ((EnvDTE.Project)x)?.FullName;
+                }).Where(x => x != null).ToList();
 
                 foreach (var project in projects)
                 {
-                    var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;
-
-                    var webPackages = vsproject.References.Flatten().Select(x =>
+                    try
                     {
-                        try
-                        {
-                            return new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault();
-                        }
-                        catch
-                        {
-                            return null;
-                        }
-                    }).Where(x => x != null);
+                        var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;
 
-                    projectPathsWithReferences.Add(((EnvDTE.Project)project).FullName, webPackages.ToList());
+                        var webPackages = vsproject.References.Flatten().Select(x =>
+                        {
+                            try
+                            {
+                                return new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault();
+                            }
+                            catch
+                            {
+                                return null;
+                            }
+                        }).Where(x => x != null);
+
+                        projectPathsWithReferences.Add(((EnvDTE.Project)project).FullName, webPackages.ToList());
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                 }
             });
             return projectPathsWithReferences;
