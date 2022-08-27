@@ -63,36 +63,38 @@ namespace HtmlCssClassCompletion22
                 DTE dte = await VS.GetServiceAsync<DTE, DTE>();
                 var projects = dte.Solution.Projects;
 
-
-                var projectPaths = projects.Flatten().Select(x =>
+                if (projects?.Count > 0)
                 {
-                    ThreadHelper.ThrowIfNotOnUIThread();
-                    return ((EnvDTE.Project)x)?.FullName;
-                }).Where(x => x != null).ToList();
-
-                foreach (var project in projects)
-                {
-                    try
+                    var projectPaths = projects?.Flatten()?.Select(x =>
                     {
-                        var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;
+                        ThreadHelper.ThrowIfNotOnUIThread();
+                        return ((EnvDTE.Project)x)?.FullName;
+                    })?.Where(x => x != null)?.ToList();
 
-                        var webPackages = vsproject.References.Flatten().Select(x =>
+                    foreach (var project in projects)
+                    {
+                        try
                         {
-                            try
-                            {
-                                return new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault();
-                            }
-                            catch
-                            {
-                                return null;
-                            }
-                        }).Where(x => x != null);
+                            var vsproject = ((EnvDTE.Project)project).Object as VSLangProj.VSProject;
 
-                        projectPathsWithReferences.Add(((EnvDTE.Project)project).FullName, webPackages.ToList());
-                    }
-                    catch
-                    {
-                        continue;
+                            var webPackages = vsproject.References.Flatten().Select(x =>
+                            {
+                                try
+                                {
+                                    return new FileInfo(((VSLangProj.Reference)x).Path).Directory.Parent.Parent.GetDirectories("staticwebassets").FirstOrDefault();
+                                }
+                                catch
+                                {
+                                    return null;
+                                }
+                            }).Where(x => x != null);
+
+                            projectPathsWithReferences.Add(((EnvDTE.Project)project).FullName, webPackages.ToList());
+                        }
+                        catch
+                        {
+                            continue;
+                        }
                     }
                 }
             });
