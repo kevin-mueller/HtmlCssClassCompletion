@@ -17,6 +17,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Markup;
 using VSLangProj;
 using Task = System.Threading.Tasks.Task;
 
@@ -73,8 +74,16 @@ namespace HtmlCssClassCompletion22
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
         public async void OnAfterDocumentSaved(string documentPath)
         {
-            if (documentPath.EndsWith("css") || documentPath.EndsWith("html"))
-                await ElementCatalog.GetInstance().RefreshClassesAsync();
+            try
+            {
+
+                if (documentPath.EndsWith("css") || documentPath.EndsWith("html"))
+                    await ElementCatalog.GetInstance().RefreshClassesAsync();
+            }
+            catch (Exception ex)
+            {
+                await VS.StatusBar.ShowMessageAsync($"Failed to scan CSS classes. {ex?.Message}");
+            }
         }
 
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
@@ -82,15 +91,33 @@ namespace HtmlCssClassCompletion22
         {
             //yes I know, simply awaiting a delay is not the prettiest ways of making sure all references are present, but it's the only
             //one I've found. There is no other event, that occures at a later stage, so this will have to suffice.
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            await ElementCatalog.GetInstance().RefreshClassesAsync();
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await ElementCatalog.GetInstance().RefreshClassesAsync();
+            }
+            catch (Exception ex)
+            {
+                //I think this method might fail when loading a really big project.
+                //the problem is, that this event fires before all projects are actually loaded.
+                //it fires as soon as the solution is "opened".
+                //I think this is because VS started to implement the loading of projects as async.
+                await VS.StatusBar.ShowMessageAsync($"Failed to scan CSS classes. {ex?.Message}");
+            }
         }
 
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
         private async void OnAfterAddProjectItems(IEnumerable<SolutionItem> obj)
         {
-            if (obj.Any(x => x.Name.EndsWith(".css")))
-                await ElementCatalog.GetInstance().RefreshClassesAsync();
+            try
+            {
+                if (obj.Any(x => x.Name.EndsWith(".css")))
+                    await ElementCatalog.GetInstance().RefreshClassesAsync();
+            }
+            catch (Exception ex)
+            {
+                await VS.StatusBar.ShowMessageAsync($"Failed to scan CSS classes. {ex?.Message}");
+            }
         }
         #endregion        
     }
