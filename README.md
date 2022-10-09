@@ -20,7 +20,7 @@ If you add new css files, you can re-scan all files by using Tools -> Scan all P
 
 ![image](https://user-images.githubusercontent.com/43059964/128539310-d21a2859-8ed9-4208-a956-55c14c3a9fec.png)
 
-The scanning also happens automatically every time you save a .css or .html file.
+The scanning also happens automatically every time you save a .css or .html file. This behavior can be turned off in the options under Tools -> Options -> Better Razor Css Class Intellisense.
 
 You should now be able to use the intellisense:
 
