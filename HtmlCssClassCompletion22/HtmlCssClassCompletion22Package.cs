@@ -12,6 +12,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Contracts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -44,6 +45,7 @@ namespace HtmlCssClassCompletion22
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(HtmlCssClassCompletion22Package.PackageGuidString)]
+    [ProvideOptionPage(typeof(OptionPage), "Better Razor CSS Class Intellisense", "General", 0, 0, true)]
     public sealed class HtmlCssClassCompletion22Package : AsyncPackage
     {
         /// <summary>
@@ -62,6 +64,8 @@ namespace HtmlCssClassCompletion22
         /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            ElementCatalog.GetInstance(this);
+
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             await this.RegisterCommandsAsync();
@@ -74,9 +78,11 @@ namespace HtmlCssClassCompletion22
         [SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Event Handler")]
         public async void OnAfterDocumentSaved(string documentPath)
         {
+            if (!((OptionPage)GetDialogPage(typeof(OptionPage))).ScanOnSave)
+                return;
+
             try
             {
-
                 if (documentPath.EndsWith("css") || documentPath.EndsWith("html"))
                     await ElementCatalog.GetInstance().RefreshClassesAsync();
             }
@@ -120,5 +126,31 @@ namespace HtmlCssClassCompletion22
             }
         }
         #endregion        
+    }
+
+    [ComVisible(true)]
+    public class OptionPage : DialogPage
+    {
+        private bool scanOnSave = true;
+
+        [Category("Better Razor CSS Class Intellisense")]
+        [DisplayName("Scan on save")]
+        [Description("Automatically re-scan when saving a css or html file.")]
+        public bool ScanOnSave
+        {
+            get { return scanOnSave; }
+            set { scanOnSave = value; }
+        }
+
+        private bool useCdnCache = false;
+
+        [Category("Better Razor CSS Class Intellisense")]
+        [DisplayName("Use Cdn Cache")]
+        [Description("Cache the content of linked external css files. This reduces the time for scanning, especially if your internet connection is slow, but increases RAM usage.")]
+        public bool UseCdnCache
+        {
+            get { return useCdnCache; }
+            set { useCdnCache = value; }
+        }
     }
 }

@@ -17,20 +17,26 @@ using HtmlAgilityPack;
 using Community.VisualStudio.Toolkit;
 using System.ComponentModel;
 using Microsoft.VisualStudio.TaskStatusCenter;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace HtmlCssClassCompletion22
 {
     internal class ElementCatalog
     {
+        private readonly HtmlCssClassCompletion22Package package;
+
         private static ElementCatalog _instance;
         private HttpClient _httpClient;
 
-        private ElementCatalog()
+        public Dictionary<Uri, string> CdnCache = new();
+
+        private ElementCatalog(HtmlCssClassCompletion22Package package)
         {
+            this.package = package;
             _httpClient = new HttpClient();
         }
 
-        internal static ElementCatalog GetInstance() => _instance ??= new ElementCatalog();
+        internal static ElementCatalog GetInstance(HtmlCssClassCompletion22Package package = null) => _instance ??= new ElementCatalog(package);
 
         public List<CssClass> Classes { get; set; } = new List<CssClass>();
 
@@ -47,7 +53,6 @@ namespace HtmlCssClassCompletion22
             data.CanBeCanceled = true;
 
             var handler = tsc.PreRegister(options, data);
-
 
             var task = BackgroundTaskAsync(data, handler, await GetProjectPathsWithReferencesAsync());
             handler.RegisterTask(task);
@@ -69,7 +74,7 @@ namespace HtmlCssClassCompletion22
                     {
                         ThreadHelper.ThrowIfNotOnUIThread();
                         return ((EnvDTE.Project)x)?.FullName;
-                    })?.Where(x => x != null)?.ToList();
+                    })?.Where(x => !string.IsNullOrEmpty(x))?.ToList();
 
                     foreach (var project in projects)
                     {
@@ -169,7 +174,7 @@ namespace HtmlCssClassCompletion22
                     {
                         try
                         {
-                            Classes.AddRange(GetCssClasses(await _httpClient.GetStringAsync(fileUrl), fileUrl.AbsoluteUri));
+                            Classes.AddRange(GetCssClasses(await GetCdnContentAsync(fileUrl), fileUrl.AbsoluteUri));
                         }
                         catch (HttpRequestException)
                         {
@@ -198,6 +203,19 @@ namespace HtmlCssClassCompletion22
             await VS.StatusBar.ShowMessageAsync(data.ProgressText);
 
             handler.Progress.Report(data);
+        }
+
+        private async Task<string> GetCdnContentAsync(Uri url)
+        {
+            if (((OptionPage)package.GetDialogPage(typeof(OptionPage))).UseCdnCache)
+            {
+                if (CdnCache.ContainsKey(url))
+                    return CdnCache.FirstOrDefault(x => x.Key == url).Value;
+            }
+
+            var res = await _httpClient.GetStringAsync(url);
+            CdnCache.Add(url, res);
+            return res;
         }
 
         private List<Uri> GetCdnUrlsFromHtmlFiles(FileInfo[] htmlFiles)
