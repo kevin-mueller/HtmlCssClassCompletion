@@ -146,8 +146,6 @@ namespace HtmlCssClassCompletion22
                 {
                     packageFiles.AddRange(webPackage.GetFiles("*.css", SearchOption.AllDirectories));
                 }
-                packageFiles.Sort();
-                packageFiles = packageFiles.Distinct().ToList();
                 files.AddRange(packageFiles);
 
 
