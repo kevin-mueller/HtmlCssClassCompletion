@@ -132,11 +132,17 @@ namespace HtmlCssClassCompletion22
                     continue;
                 }
 
+                var di = new DirectoryInfo(folderPath);
+                var excludedPaths = new string[]
+                {
+                    $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"
+                };
+
                 //get all .css files directly from the project folder
-                var files = new DirectoryInfo(folderPath).GetFiles("*.css", SearchOption.AllDirectories).ToList();
+                var files = di.GetFiles("*.css", SearchOption.AllDirectories).Where(x => !excludedPaths.Any(y => x.FullName.Contains(y))).ToList();
 
                 //get all html files directly from the project folder (to extract cdn css files from it)
-                var htmlFiles = new DirectoryInfo(folderPath).GetFiles("*.*html", SearchOption.AllDirectories);
+                var htmlFiles = di.GetFiles("*.*html", SearchOption.AllDirectories).Where(x => !excludedPaths.Any(y => x.FullName.Contains(y)));
 
                 //also search package references of the project, in order to get the css files from nuget packages
 
@@ -216,7 +222,7 @@ namespace HtmlCssClassCompletion22
             return res;
         }
 
-        private List<Uri> GetCdnUrlsFromHtmlFiles(FileInfo[] htmlFiles)
+        private List<Uri> GetCdnUrlsFromHtmlFiles(IEnumerable<FileInfo> htmlFiles)
         {
             var cdnUrls = new List<string>();
 
